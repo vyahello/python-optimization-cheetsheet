@@ -1,9 +1,9 @@
 def countdown_from(number):
-    print(f'Starting to count from {number}!')
+    print(f"Starting to count from {number}!")
     while number > 0:
         yield number
         number -= 1
-    print('Done!')
+    print("Done!")
 
 
 def increment(start, stop):

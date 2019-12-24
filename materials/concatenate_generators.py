@@ -2,12 +2,12 @@ import itertools
 
 
 def fruits():
-    for fruit in ['apple', 'orange', 'banana']:
+    for fruit in ("apple", "orange", "banana"):
         yield fruit
 
 
 def vegetables():
-    for vegetable in ['potato', 'tomato', 'cucumber']:
+    for vegetable in ("potato", "tomato", "cucumber"):
         yield vegetable
 
 

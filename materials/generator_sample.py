@@ -6,7 +6,7 @@ generator = generator_sample()
 print(generator)
 print(type(generator))
 print(dir(generator))
-print(hasattr(generator, '__next__'))
+print(hasattr(generator, "__next__"))
 print(next(generator))
 print(next(generator))
 

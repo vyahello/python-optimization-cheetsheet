@@ -1,10 +1,10 @@
 def multiple_yields():
-    yield 'This'
-    yield 'is'
-    yield 'my'
-    yield 'generator'
-    yield 'function'
-    yield '!'
+    yield "This"
+    yield "is"
+    yield "my"
+    yield "generator"
+    yield "function"
+    yield "!"
 
 
 values = multiple_yields()
