@@ -77,6 +77,7 @@ for value in other_values:
 > Any function that has `yield` operator is a generator.
 >
 > Generation an infinite sequence, however, will require the use of a generator, since your computer memory is finite.
+> Yield is an expression rather than statement.
 ```python
 # materials/yielding.py
 
@@ -259,21 +260,232 @@ print(cProfile.run('sum(list_container)'))
 ```
 
 ## Coroutines
+> Coroutines can consume and produce data. They can pause stream execution till next message is sent.
+>
+> Generators produce data for iteration while coroutines can also consume data.
 
-**Sending values**
+**Sending values with `.send` method**
 ```python
-# materials/coroutines.py
+# materials/send_coroutines.py
 
-def generator(input_number):
-    number = yield
-    while number < input_number:
-        number = yield number
+def coroutine():
+    while True:
+        value = yield  # allows to manipulate yielded value
+        print(value)
+
+
+i = coroutine()
+i.send(None)  # initial value should be 'None'
+i.send(1)
+i.send(10)
+
+
+def counter(maximum):
+    initial = 0
+    while initial < maximum:
+        value = (yield initial)  # equals to None till .send(number) is called
+        # If value is given (remember default is None) then change the counter
+        if value is not None:
+            initial = value
+        else:
+            initial += 1
+
+
+c = counter(10)
+print(next(c))  # 0
+print(next(c))  # 1
+print(c.send(5))  # 5
+print(next(c))  # 6
+
+def is_palindrome_number(number):
+    return number == int(str(number)[::-1])
+
+
+def infinite_palindromes():
+    number = 0
+    while True:
+        if is_palindrome_number(number):
+            i = (yield number)
+            if i is not None:
+                number = i
         number += 1
 
 
-g = generator(10)
-next(g)
-print(g.send(5))
+c = infinite_palindromes()
+print(next(c))  # 0
+print(next(c))  # 1
+print(c.send(100))  # 101
+print(next(c))  # 111
+
+
+def print_name(prefix):
+    print("Search for", prefix, "prefix")
+    while True:
+        name = yield
+        if prefix in name:
+            print(name)
+
+
+pn = print_name("Dear")
+next(pn)  # calls first yield expression
+pn.send("Alex")
+pn.send("Dear Alex")  # matches with prefix
+
+
+def grep(pattern):
+    print(f"Search for '{pattern}' pattern")
+    while True:
+        value = yield
+        if pattern in value:
+            print(f"Matched: '{value}'")
+
+
+g = grep("hey")
+next(g)  # to start coroutine
+g.send("hello")
+g.send("hey")
+g.send("hey Mike")
+```
+
+**Raise an exception with `.throw` method**
+> `.throw()` allows you to throw exceptions through the generator.
+
+```python
+# materials/throw_coroutines.py
+
+def counter(maximum):
+    initial = 0
+    while initial < maximum:
+        value = (yield initial)  # equals to None till .send(number) is called
+        # If value is given (remember default is None) then change the counter
+        if value is not None:
+            initial = value
+        else:
+            initial += 1
+
+
+c = counter(10)
+for i in c:
+    print(i)
+    if i == 5:
+        c.throw(ValueError("It is too large"))
+```
+
+**Stop generator with `.close` method**
+> `.close()` allows you to stop a generator. Instead of calling `.throw()`, you use `.close()` (it calls StopIteration error). 
+
+```python
+# materials/close_coroutines.py
+
+def counter(maximum):
+    initial = 0
+    while initial < maximum:
+        value = (yield initial)  # equals to None till .send(number) is called
+        # If value is given (remember default is None) then change the counter
+        if value is not None:
+            initial = value
+        else:
+            initial += 1
+
+
+c = counter(10)
+for i in c:
+    print(i)
+    if i == 5:
+        c.close()  # stops as here is raises 'StopIteration' exception
+
+
+def print_name(prefix):
+    print("Search for", prefix, "prefix")
+    try:
+        while True:
+            name = yield
+            if prefix in name:
+                print(name)
+    except GeneratorExit:
+        print("Closing generator!")
+
+
+pn = print_name("Dear")
+next(pn)  # calls first yield expression
+pn.send("Alex")
+pn.send("Dear Alex")  # matches with prefix
+```
+
+**Create pipelines**
+> Coroutines can be used to set pipes
+
+```python
+# materials/coroutine_chaining.py
+
+def producer(sentence: str, next_coroutine):
+    """Split strings and feed it to pattern_filter coroutine."""
+    tokens = sentence.split(" ")
+    for token in tokens:
+        next_coroutine.send(token)
+    next_coroutine.close()
+
+
+def pattern_filter(pattern="ing", next_coroutine=None):
+    """Search for pattern and if pattern got matched, send it to print_token coroutine."""
+    print(f"Search for {pattern} pattern")
+    try:
+        while True:
+            token = yield
+            if pattern in token:
+                next_coroutine.send(token)
+    except GeneratorExit:
+        print("Done with filtering")
+
+
+def print_token():
+    """Act as a sink, simply print the token."""
+    print("I'm sink, I'll print tokens")
+    try:
+        while True:
+            token = yield
+            print(token)
+    except GeneratorExit:
+        print("Done with printing")
+
+
+pt = print_token()
+next(pt)
+pf = pattern_filter(next_coroutine=pt)
+next(pf)
+
+sentence = "Bob is running behind a fast moving car"
+producer(sentence, pf)
+```
+
+**Tricks**
+```python
+# materials/decorator.py
+
+def coroutine(func):
+    """A decorator function that eliminates the need to call .next() when starting a coroutine."""
+    def start(*args, **kwargs):
+        cr = func(*args, **kwargs)
+        next(cr)
+        return cr
+    return start
+
+
+if __name__ == "__main__":
+    @coroutine
+    def grep(pattern):
+        print(f"Search for '{pattern}' pattern")
+        while True:
+            value = yield
+            if pattern in value:
+                print(value)
+
+
+    g = grep("python")
+    # Notice now you don't need a next() call here
+    g.send("Yeah, but no, but yeah, but no")
+    g.send("A series of tubes")
+    g.send("python generators rock!")
 ```
 
 ## AsyncIO
@@ -285,6 +497,8 @@ print(g.send(5))
 - https://docs.python.org/3/library/asyncio.html
 - https://docs.python.org/3.6/glossary.html#term-generator
 - https://realpython.com/introduction-to-python-generators
+- https://www.geeksforgeeks.org/coroutine-in-python
+- http://www.dabeaz.com/coroutines
 
 ### Meta
 Author – Volodymyr Yahello vyahello@gmail.com

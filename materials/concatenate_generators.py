@@ -11,8 +11,8 @@ def vegetables():
         yield vegetable
 
 
-print(help(itertools.chain))
-
-bucket = itertools.chain(fruits(), vegetables())
-for item in bucket:
-    print(item)
+if __name__ == "__main__":
+    print(help(itertools.chain))
+    bucket = itertools.chain(fruits(), vegetables())
+    for item in bucket:
+        print(item)

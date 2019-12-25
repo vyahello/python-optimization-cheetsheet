@@ -7,13 +7,14 @@ def multiple_yields():
     yield "!"
 
 
-values = multiple_yields()
-print(next(values))
-print(next(values))
-print(next(values))
-print(next(values))
-print(next(values))
+if __name__ == "__main__":
+    values = multiple_yields()
+    print(next(values))
+    print(next(values))
+    print(next(values))
+    print(next(values))
+    print(next(values))
 
-other_values = multiple_yields()
-for value in other_values:
-    print(value)
+    other_values = multiple_yields()
+    for value in other_values:
+        print(value)

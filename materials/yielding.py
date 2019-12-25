@@ -26,11 +26,11 @@ def increment(start, stop):
     yield from range(start, stop)
 
 
-countdown = countdown_from(number=10)
-for count in countdown:
-    print(count)
+if __name__ == "__main__":
+    countdown = countdown_from(number=10)
+    for count in countdown:
+        print(count)
 
-
-incremental = increment(start=1, stop=10)
-for inc in incremental:
-    print(inc)
+    incremental = increment(start=1, stop=10)
+    for inc in incremental:
+        print(inc)

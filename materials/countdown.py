@@ -15,10 +15,11 @@ class Countdown:
             number += 1
 
 
-forward_countdown = Countdown(10)
-for f_count in forward_countdown:
-    print(f_count)
+if __name__ == "__main__":
+    forward_countdown = Countdown(10)
+    for f_count in forward_countdown:
+        print(f_count)
 
-reversed_countdown = reversed(Countdown(10))
-for r_count in reversed_countdown:
-    print(r_count)
+    reversed_countdown = reversed(Countdown(10))
+    for r_count in reversed_countdown:
+        print(r_count)

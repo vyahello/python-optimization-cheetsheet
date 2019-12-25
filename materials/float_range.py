@@ -5,5 +5,6 @@ def float_range(start, stop, increment):
         initial_point += increment
 
 
-for number in float_range(0, 4, 0.5):
-    print(number)
+if __name__ == "__main__":
+    for number in float_range(0, 4, 0.5):
+        print(number)
