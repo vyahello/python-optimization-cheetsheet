@@ -583,16 +583,136 @@ if __name__ == "__main__":
     follow(f, broadcast((grep("python", printer()), grep("ply", printer()), grep("swig", printer()))))
 ```
 ## AsyncIO
+> `Asynchronous IO` is a concurrent programming design (paradigm).
+> `Coroutines` (specialized generator functions) are the heart of async IO in Python.
+> 
+> `Parallelism` consists of performing multiple operations at the same time. 
+> Multiprocessing is a means to effect parallelism, and it entails spreading tasks over a computer’s central processing units (CPUs, or cores).
+> 
+> `Concurrency` is a slightly broader term than parallelism. Multiple tasks have the ability to run in an overlapping manner.
+> Concurrency (`concurrent.futures` package) include both multiprocessing and threading.
+>
+> `Threading` is a concurrent execution model whereby multiple threads take turns executing tasks. One process can contain multiple threads.
+>
+> `asyncio` is a library to write concurrent code. It is not threading, nor is it multiprocessing.
+> In fact, async IO is a single-threaded, single-process design: it uses cooperative multitasking. 
+> Coroutines (a central feature of async IO) can be scheduled concurrently, but they are not inherently concurrent.
+>
+> async IO is a style of concurrent programming, but it is not parallelism. 
+> It’s more closely aligned with threading than with multiprocessing 
+> but is very much distinct from both of these and is a standalone member in concurrency’s bag of tricks
+> 
+> What is `asynchronous` ?
+> - Asynchronous routines are able to “pause” while waiting on their ultimate result and let other routines run in the meantime
+> - Asynchronous code, facilitates concurrent execution
+>
+> Async IO takes long waiting periods in which functions would otherwise be blocking and allows other functions to run during that downtime
+>
+> `async` built on non-blocking sockets, callbacks and event loops.
+> `async def` syntax stand for native coroutine or asynchronous generator.
+> `await` keyword passes function control back to event loop. It suspends the execution of coroutine.
+> 
+```python
+# materials/async_.py
+
+import asyncio
+
+
+async def count():  # single event loop
+    print("One")
+    await asyncio.sleep(1)  # when task reaches here it will sleep to 1 seconds ands says to do other job meantime
+    print("Two")
+
+
+async def main():
+    await asyncio.gather(count(), count(), count())
+
+
+if __name__ == "__main__":
+    import time
+    s = time.perf_counter()
+    asyncio.run(main())
+    elapsed = time.perf_counter() - s
+    print(f"{__file__} executed in {elapsed:0.2f} seconds.")
+```
+```python
+# materials/sync.py
+
+import time
+
+
+def count():
+    print("One")
+    time.sleep(1)
+    print("Two")
+
+
+def main():
+    for _ in range(3):
+        count()
+
+
+if __name__ == "__main__":
+    s = time.perf_counter()
+    main()
+    elapsed = time.perf_counter() - s
+    print(f"{__file__} executed in {elapsed:0.2f} seconds.")  # 3.01 seconds
+```
+> If Python encounters an await f() expression in the scope of g(), this is how await tells the event loop, 
+> “Suspend execution of g() until whatever I’m waiting on—the result of f() — is returned. In the meantime, go let something else run.”
+> `async def` is a coroutine. It may use await, return, or yield, but all of these are optional.
+```python
+async def g():
+    # Pause here and come back to g() when f() is ready
+    r = await f()
+    return r
+```
+> Using `await` and/or `return` creates a `coroutine` function. 
+> To call a coroutine function, you must `await` it to get its results.
+>
+> Using `yield` in an `async def` block creates an asynchronous generator, which you iterate over with `async` for.
+> `yield from` in an `async def` will raise SyntaxError.
+```python
+# materials/async_gen.py
+
+async def genfunc():
+    yield 1
+    yield 2
+
+gen = genfunc()
+assert gen.__aiter__() is gen
+assert await gen.__anext__() == 1
+assert await gen.__anext__() == 2
+await gen.__anext__()  # This line will raise StopAsyncIteration.
+```
+```python
+async def f(x):
+    y = await z(x)  # OK - `await` and `return` allowed in coroutines
+    return y
+
+async def g(x):
+    yield x  # OK - this is an async generator
+
+async def m(x):
+    yield from gen(x)  # No - SyntaxError
+
+def m(x):
+    y = await z(x)  # Still no - SyntaxError (no `async def` here)
+    return y
+```
+
 
 ### Materials
 - https://docs.python.org/3/howto/functional.html#generator-expressions-and-list-comprehensions
 - https://www.python.org/dev/peps/pep-0289
 - https://www.python.org/dev/peps/pep-0342
+- https://www.python.org/dev/peps/pep-0525
 - https://docs.python.org/3/library/asyncio.html
 - https://docs.python.org/3.6/glossary.html#term-generator
 - https://realpython.com/introduction-to-python-generators
 - https://www.geeksforgeeks.org/coroutine-in-python
 - http://www.dabeaz.com/coroutines
+- https://realpython.com/async-io-python
 
 ### Meta
 Author – Volodymyr Yahello vyahello@gmail.com
