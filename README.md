@@ -318,7 +318,7 @@ print(next(c))  # 111
 
 
 def print_name(prefix):
-    print("Search for", prefix, "prefix")
+    print("Search for ", prefix, " prefix")
     while True:
         name = yield
         if prefix in name:

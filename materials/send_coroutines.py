@@ -1,6 +1,9 @@
+from typing import Coroutine
+
+
 def coroutine():
     while True:
-        value = yield  # allows to manipulate yielded value
+        value = yield  # allows manipulating yielded value
         print(value)
 
 
@@ -50,7 +53,7 @@ print(next(c))  # 111
 
 
 def print_name(prefix):
-    print("Search for", prefix, "prefix")
+    print("Search for ", prefix, " prefix")
     while True:
         name = yield
         if prefix in name:

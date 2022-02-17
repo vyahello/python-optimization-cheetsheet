@@ -1,5 +1,8 @@
 def coroutine(func):
-    """A decorator function that eliminates the need to call .next() when starting a coroutine."""
+    """
+    A decorator function that eliminates the need to call .next()
+    when starting a coroutine.
+    """
     def start(*args, **kwargs):
         cr = func(*args, **kwargs)
         next(cr)
